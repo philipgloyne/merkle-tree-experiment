@@ -1,4 +1,4 @@
-# mertle-tree
+# merkle-tree
 
 [Assignment spec](consensysspec_java.pdf)  
 
@@ -8,7 +8,7 @@ Implementation of a Merkle-Tree in Java for Consensys.
 
 - Create a Merkle tree with a list of transactions
 - Return the Merkle root
-- Create a Merkle proof - A path (in the form of a List<String>) to the root
+- Create a Merkle proof, a path (in the form of a List<String>) to the root
 - Validate a given Merkle proof
 - Update a single transaction in a tree 
 - Add a transaction to a tree

@@ -1,6 +1,6 @@
 # merkle-tree
 
-[Assignment spec](consensysspec_java.pdf)  
+[Assignment spec](consensys_spec_java.pdf)  
 
 Implementation of a Merkle-Tree in Java for Consensys. 
 
@@ -21,5 +21,5 @@ Implementation of a Merkle-Tree in Java for Consensys.
 #### Run notes
 
 - Java 17+, minimal dependency library (junit) 
-- Gradle build `./gradlew test`
+- Gradle build `gradle test`
 

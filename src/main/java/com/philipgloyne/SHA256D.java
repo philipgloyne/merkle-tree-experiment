@@ -6,7 +6,7 @@ import java.util.HexFormat;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class SHA256D implements HashTransform {
+public class SHA256D implements HashAlgorithm {
 
     private final String SHA_256 = "SHA-256";
 

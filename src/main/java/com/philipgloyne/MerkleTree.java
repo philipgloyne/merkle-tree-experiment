@@ -5,11 +5,11 @@ import java.util.List;
 
 public class MerkleTree {
 
-    private HashTransform hashFn;
+    private final HashAlgorithm hashFn;
     private List<String> values;
     private int txSize;
 
-    public MerkleTree(HashTransform hashFn, List<String> txs) {
+    public MerkleTree(HashAlgorithm hashFn, List<String> txs) {
         this.hashFn = hashFn;
         this.values = buildTree(txs);
     }
@@ -49,13 +49,19 @@ public class MerkleTree {
         return levels;
     }
 
+    /**
+     * The path of hashes required to prove a transaction at an index
+     *
+     * @param index of tx
+     * @return list of hashes which proves the transaction will lead to the merkle root
+     */
     public List<String> createProof(int index) {
         return createProofIndexes(index).stream().map(i -> values.get(i)).toList();
     }
 
     /**
-     * Returns true if the proof path and for a given
-     * @param index
+     * TRUE if the proof path and for a given index is correct, FALSE otherwise
+     * @param index of tx
      * @param proof
      * @return
      */
@@ -90,7 +96,7 @@ public class MerkleTree {
 
             levelIndex = getParentIndex(levelIndex);
             levelStart += levelSize;
-            levelSize = (int) Math.ceil((levelSize + 1) / 2);
+            levelSize = (int) Math.ceil((levelSize + 1) >> 1);
         }
         return indexes;
     }
@@ -125,7 +131,7 @@ public class MerkleTree {
         int treeSize = values.size();
         int treeHeight = (int) (Math.log(treeSize) / Math.log(2));
         int levelStart = txSize;
-        int levelSize = (int) Math.ceil((txSize + 1) / 2);
+        int levelSize = (int) Math.ceil((txSize + 1) >> 1);
         int levelIndex = getParentIndex(index);
 
         for (int level = 1; level < treeHeight; level++) {
@@ -149,7 +155,7 @@ public class MerkleTree {
 
             levelIndex = getParentIndex(levelIndex);
             levelStart += levelSize;
-            levelSize = (int) Math.ceil((levelSize + 1) / 2);
+            levelSize = (int) Math.ceil((levelSize + 1) >> 1);
         }
 
         // update root

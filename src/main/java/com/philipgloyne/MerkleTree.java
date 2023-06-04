@@ -5,48 +5,20 @@ import java.util.List;
 
 public class MerkleTree {
 
+    private final TreeBuilder builder;
     private final HashAlgorithm hashFn;
-    private List<String> values;
     private int txSize;
+    private List<String> values;
 
-    public MerkleTree(HashAlgorithm hashFn, List<String> txs) {
+    public MerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<String> txs) {
+        this.builder = builder;
         this.hashFn = hashFn;
-        this.values = buildTree(txs);
+        this.txSize = txs.size();
+        this.values = builder.build(txs);
     }
 
     public String getRoot() {
         return values.get(values.size() - 1);
-    }
-
-    private List<String> buildTree(List<String> txs) {
-        if (txs.size() == 0) return List.of("");
-        if (txs.size() == 1) return List.of(hashFn.hash(txs.get(0)));
-
-        this.txSize = txs.size();
-        List<String> levels = new ArrayList<>(txs);
-        List<String> currentLvl = txs;
-        while (currentLvl.size() > 1) {
-            List<String> nextLvl = new ArrayList<>();
-
-            for (int i = 0; i < currentLvl.size(); i += 2) {
-
-                String hash1 = hashFn.hash(currentLvl.get(i));
-                String hash2 = (i + 1 < currentLvl.size())
-                        ? hashFn.hash(currentLvl.get(i + 1))
-                        : "";
-
-                String parentHash = hashFn.hash(hash1 + hash2);
-
-                nextLvl.add(parentHash);
-                levels.add(parentHash);
-            }
-
-            currentLvl = nextLvl;
-        }
-
-        // System.out.println("buildTree: " + Arrays.toString(levels.toArray()));
-
-        return levels;
     }
 
     /**
@@ -61,12 +33,17 @@ public class MerkleTree {
 
     /**
      * TRUE if the proof path and for a given index is correct, FALSE otherwise
+     *
      * @param index of tx
      * @param proof
      * @return
      */
     public boolean validateProof(int index, List<String> proof) {
         return createProof(index).equals(proof);
+    }
+
+    public boolean validateProofTx(int index, List<String> proof, String tx) {
+        return values.get(index).equals(hashFn.hash(tx)) && createProof(index).equals(proof);
     }
 
     private List<Integer> createProofIndexes(int index) {
@@ -102,7 +79,7 @@ public class MerkleTree {
     }
 
     private int getLeftChildIndex(int levelStart, int indexInLevel) {
-        int offset = (indexInLevel % 2 == 0) ? indexInLevel : indexInLevel - 1 ;
+        int offset = (indexInLevel % 2 == 0) ? indexInLevel : indexInLevel - 1;
         return levelStart + offset;
     }
 
@@ -116,6 +93,7 @@ public class MerkleTree {
 
     /**
      * Updates a single transaction at index and rehashes only the required nodes all the way to the root.
+     *
      * @param index - the known index of the transaction to mutate.
      * @param value - the new value of the transaction.
      */
@@ -167,12 +145,14 @@ public class MerkleTree {
      * Add a new transaction to an existing tree.
      * Reader: this in case we want a talking point regarding how computationally inefficient it is and the
      * read vs write workload of this data structure (I have never used one in production).
+     *
      * @param tx - the transaction to add
      */
     public void addTx(String tx) {
         List<String> txs = values.subList(0, txSize);
         txs.add(tx);
-        this.values = buildTree(txs);
+        this.txSize = txs.size();
+        this.values = builder.build(txs);
     }
 }
 

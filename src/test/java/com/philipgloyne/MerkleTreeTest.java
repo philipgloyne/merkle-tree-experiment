@@ -13,7 +13,7 @@ class MerkleTreeTest {
     @Test
     void testEmptyMerkleTree() {
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), List.of());
+        MerkleTree idTree = basicIdentityTree(List.of());
 
         assertEquals("", idTree.getRoot());
     }
@@ -22,8 +22,8 @@ class MerkleTreeTest {
     void testMerkleRootOneTx() {
         List<String> transactions = List.of("A");
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
-        MerkleTree sha256Tree = new MerkleTree(new SHA256D(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
+        MerkleTree sha256Tree = basicSha256Tree(transactions);
 
         assertEquals("A", idTree.getRoot());
         assertEquals("1cd6ef71e6e0ff46ad2609d403dc3fee244417089aa4461245a4e4fe23a55e42", sha256Tree.getRoot());
@@ -33,8 +33,8 @@ class MerkleTreeTest {
     void testMerkleRootTwoTxs() {
         List<String> transactions = Arrays.asList("A", "B");
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
-        MerkleTree sha256Tree = new MerkleTree(new SHA256D(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
+        MerkleTree sha256Tree = basicSha256Tree(transactions);
 
         assertEquals("AB", idTree.getRoot());
         assertEquals("c25e7a4d9ec0fc3261d86909663c5292119e1682efac28c830abcd5f3ad8aab1", sha256Tree.getRoot());
@@ -44,8 +44,8 @@ class MerkleTreeTest {
     void testMerkleRootUnbalancedTree() {
         List<String> transactions = Arrays.asList("A", "B", "C");
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
-        MerkleTree sha256Tree = new MerkleTree(new SHA256D(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
+        MerkleTree sha256Tree = basicSha256Tree(transactions);
 
         assertEquals("ABC", idTree.getRoot());
         assertEquals("b998db2124e4f2dce45a1711bf04f8cba6b91a6567201bb7e0db3aa7e7e63044", sha256Tree.getRoot());
@@ -55,7 +55,7 @@ class MerkleTreeTest {
     void testUpdateTxShouldUpdateMerkleTree() {
         List<String> transactions = Arrays.asList("A", "B", "C", "D", "E");
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
         idTree.updateTx(0, "1");
         assertEquals("1BCDE", idTree.getRoot());
 
@@ -78,7 +78,7 @@ class MerkleTreeTest {
         // A, B, C, D | AB, CD | ABCD
         // 0, 1, 2, 3 | 4,  5, | 6
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
 
         assertEquals(Arrays.asList("B", "CD"), idTree.createProof(0));
         assertEquals(Arrays.asList("A", "CD"), idTree.createProof(1));
@@ -92,7 +92,7 @@ class MerkleTreeTest {
         // A, B, C, D, E | AB, CD, E  | ABCD, E  | ABCDEF
         // 0, 1, 2, 3, 4 | 5,  6,  7, | 8,    9  | 10
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
 
         assertEquals(Arrays.asList("B", "CD", "E"), idTree.createProof(0));
         assertEquals(Arrays.asList("A", "CD", "E"), idTree.createProof(1));
@@ -106,7 +106,7 @@ class MerkleTreeTest {
         List<String> transactions = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I");
         // A, B, C, D, E, F, G, H, I, | AB, CD, EF, GH, I, | ABCD, EFGH, I, | ABCDEFGH, I, | ABCDEFGHI
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
 
         assertEquals(Arrays.asList("B", "CD", "EFGH", "I"), idTree.createProof(0));
         assertEquals(Arrays.asList("A", "CD", "EFGH", "I"), idTree.createProof(1));
@@ -123,7 +123,7 @@ class MerkleTreeTest {
     void testValidateProofUnbalancedNineTxs() {
         List<String> transactions = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I");
 
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
 
         assertFalse(idTree.validateProof(0, Arrays.asList("B", "CD", "EFGH")));
         assertFalse(idTree.validateProof(0, Arrays.asList("A", "CD", "EFGH", "I")));
@@ -135,9 +135,23 @@ class MerkleTreeTest {
     }
 
     @Test
+    void testValidateProofTxUnbalancedNineTxs() {
+        List<String> transactions = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I");
+
+        MerkleTree idTree = basicIdentityTree(transactions);
+
+        assertFalse(idTree.validateProofTx(0, Arrays.asList("B", "CD", "EFGH", "I"), "Z"));
+        assertTrue(idTree.validateProofTx(0, Arrays.asList("B", "CD", "EFGH", "I"), "A"));
+
+        assertFalse(idTree.validateProofTx(8, Arrays.asList(""), "I"));
+        assertTrue(idTree.validateProofTx(8, Arrays.asList("ABCDEFGH"), "I"));
+    }
+
+
+    @Test
     void testAddTxRebuildsTree() {
         List<String> transactions = Arrays.asList("A", "B", "C", "D");
-        MerkleTree idTree = new MerkleTree(new IdentityHash(), transactions);
+        MerkleTree idTree = basicIdentityTree(transactions);
         assertEquals("ABCD", idTree.getRoot());
 
         idTree.addTx("E");
@@ -151,4 +165,18 @@ class MerkleTreeTest {
             return s;
         }
     }
+
+    private MerkleTree basicIdentityTree(List<String> txs) {
+        IdentityHash hashFn = new IdentityHash();
+        BasicTreeBuilder builder = new BasicTreeBuilder(hashFn);
+        return new MerkleTree(builder, hashFn, txs);
+    }
+
+    private MerkleTree basicSha256Tree(List<String> txs) {
+        SHA256D hashFn = new SHA256D();
+        BasicTreeBuilder builder = new BasicTreeBuilder(hashFn);
+        return new MerkleTree(builder, hashFn, txs);
+    }
+
+
 }

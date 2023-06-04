@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class FastTreeBuilderTest {
 
     @Test
@@ -21,15 +24,19 @@ class FastTreeBuilderTest {
         BasicTreeBuilder builder = new BasicTreeBuilder(new SHA256D());
         builder.build(transactions);
         long t1 = System.currentTimeMillis();
+        long basicBuildTime = t1 - t0;
 
-        System.out.println("basic tree: " + (t1 - t0) + "ms");
+        System.out.println("basic tree: " + basicBuildTime + "ms");
 
-        t0 = System.currentTimeMillis();
-        FastTreeBuilder fastTreeBuilder = new FastTreeBuilder(new SHA256D());
+        long t2 = System.currentTimeMillis();
+        FastTreeBuilder fastTreeBuilder = new FastTreeBuilder(new SHA256D()); // 8 threads
         fastTreeBuilder.build(transactions);
-        t1 = System.currentTimeMillis();
+        long t3 = System.currentTimeMillis();
+        long fastBuildTime = t3 - t2;
 
-        System.out.println("fast tree: " + (t1 - t0) + "ms"); // 8 threads
+        System.out.println("fast tree: " + fastBuildTime + "ms");
+
+        assertTrue(basicBuildTime > fastBuildTime);
     }
 
     public String randomString(int length) {

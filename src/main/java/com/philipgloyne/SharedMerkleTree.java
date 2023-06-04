@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Allows a MerkleTree to be shared between threads, writes/mutations will block reads & writes to
+ * keep consistency.
+ */
 public class SharedMerkleTree extends MerkleTree {
 
     private final ReadWriteLock lock;

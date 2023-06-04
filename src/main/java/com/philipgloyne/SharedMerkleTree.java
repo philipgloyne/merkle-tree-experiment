@@ -17,6 +17,15 @@ public class SharedMerkleTree extends MerkleTree {
         this.lock = new ReentrantReadWriteLock();
     }
 
+    public List<String> createProof(int index) {
+        lock.readLock().lock();
+        try {
+            return super.createProof(index);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     @Override
     public boolean validateProof(int index, List<String> proof) {
         lock.readLock().lock();

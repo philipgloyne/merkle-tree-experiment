@@ -13,7 +13,7 @@ class FastTreeBuilderTest {
     @Test
     void testMultiThreadedTreeBuilder() {
 
-        String aLongRandomString = randomString(50000);
+        String aLongRandomString = randomString(1200); // 4 bytes/character (UTF-8) * 300 bytes (eth tx)
         List<String> transactions = IntStream
                 .rangeClosed(1, 10000)
                 .boxed()

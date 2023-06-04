@@ -3,6 +3,9 @@ package com.philipgloyne;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Builds a MerkleTree and returns underlying data structure (Arraylist)
+ */
 public class BasicTreeBuilder implements TreeBuilder {
 
     private final HashAlgorithm hashFn;

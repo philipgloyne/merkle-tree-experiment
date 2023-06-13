@@ -1,6 +1,9 @@
 package com.philipgloyne;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MerkleTree {
@@ -8,16 +11,16 @@ public class MerkleTree {
     private final TreeBuilder builder;
     private final HashAlgorithm hashFn;
     private int txSize;
-    private List<String> values;
+    private List<byte[]> values;
 
-    public MerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<String> txs) {
+    public MerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<byte[]> txs) {
         this.builder = builder;
         this.hashFn = hashFn;
         this.txSize = txs.size();
         this.values = builder.build(txs);
     }
 
-    public String getRoot() {
+    public byte[] getRoot() {
         return values.get(values.size() - 1);
     }
 
@@ -27,8 +30,10 @@ public class MerkleTree {
      * @param index of tx
      * @return list of hashes which proves the transaction will lead to the merkle root
      */
-    public List<String> createProof(int index) {
-        return createProofIndexes(index).stream().map(i -> values.get(i)).toList();
+    public List<byte[]> createProof(int index) {
+        return createProofIndexes(index).stream()
+                .map(i -> values.get(i))
+                .toList();
     }
 
     /**
@@ -38,12 +43,20 @@ public class MerkleTree {
      * @param proof
      * @return
      */
-    public boolean validateProof(int index, List<String> proof) {
-        return createProof(index).equals(proof);
+    public boolean validateProof(int index, List<byte[]> proof) {
+        List<byte[]> expect = createProof(index);
+
+        if(expect.size() != proof.size()) return false;
+
+        for (int i = 0; i < expect.size(); i++) {
+            if (!Arrays.equals(expect.get(i), proof.get(i))) return false;
+        }
+        return true;
     }
 
-    public boolean validateProofTx(int index, List<String> proof, String tx) {
-        return values.get(index).equals(hashFn.hash(tx)) && createProof(index).equals(proof);
+    public boolean validateProofTx(int index, List<byte[]> proof, byte[] tx) {
+        return Arrays.equals(values.get(index), hashFn.hash(tx))
+                && validateProof(index, proof);
     }
 
     private List<Integer> createProofIndexes(int index) {
@@ -97,15 +110,14 @@ public class MerkleTree {
      * @param index - the known index of the transaction to mutate.
      * @param value - the new value of the transaction.
      */
-    public void updateTx(int index, String value) {
-        String hash = hashFn.hash(value);
+    public void updateTx(int index, byte[] value) {
+        byte[] hash = hashFn.hash(value);
         // update level 0
         values.set(index, hash);
-        String parentHash = (index % 2 == 0)
-                ? (index + 1 < txSize) ? hashFn.hash(hash + values.get(index + 1)) : hash
-                : hashFn.hash(values.get(index - 1) + hash);
+        byte[] parentHash = (index % 2 == 0)
+                ? (index + 1 < txSize) ? hashFn.hash(ArrayUtils.addAll(hash, values.get(index + 1))) : hash
+                : hashFn.hash(ArrayUtils.addAll(values.get(index - 1), hash));
 
-        List<Integer> indexes = new ArrayList<Integer>();
         int treeSize = values.size();
         int treeHeight = (int) (Math.log(treeSize) / Math.log(2));
         int levelStart = txSize;
@@ -124,10 +136,10 @@ public class MerkleTree {
             if (rightIndex < levelMax) {
                 if (levelIndex % 2 == 0) {
                     values.set(leftIndex, parentHash);
-                    parentHash = hashFn.hash(parentHash + values.get(rightIndex));
+                    parentHash = hashFn.hash(ArrayUtils.addAll(parentHash, values.get(rightIndex)));
                 } else {
                     values.set(rightIndex, parentHash);
-                    parentHash = hashFn.hash(values.get(leftIndex) + parentHash);
+                    parentHash = hashFn.hash(ArrayUtils.addAll(values.get(leftIndex), parentHash));
                 }
             }
 
@@ -137,7 +149,7 @@ public class MerkleTree {
         }
 
         // update root
-        String rootHash = hashFn.hash(values.get(values.size() - 3) + values.get(values.size() - 2));
+        byte[] rootHash = hashFn.hash(ArrayUtils.addAll(values.get(values.size() - 3), values.get(values.size() - 2)));
         values.set(values.size() - 1, rootHash);
     }
 
@@ -148,8 +160,8 @@ public class MerkleTree {
      *
      * @param tx - the transaction to add
      */
-    public void addTx(String tx) {
-        List<String> txs = values.subList(0, txSize);
+    public void addTx(byte[] tx) {
+        List<byte[]> txs = values.subList(0, txSize);
         txs.add(tx);
         this.txSize = txs.size();
         this.values = builder.build(txs);

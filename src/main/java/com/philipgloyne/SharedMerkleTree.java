@@ -12,12 +12,12 @@ public class SharedMerkleTree extends MerkleTree {
 
     private final ReadWriteLock lock;
 
-    public SharedMerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<String> txs) {
+    public SharedMerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<byte[]> txs) {
         super(builder, hashFn, txs);
         this.lock = new ReentrantReadWriteLock();
     }
 
-    public List<String> createProof(int index) {
+    public List<byte[]> createProof(int index) {
         lock.readLock().lock();
         try {
             return super.createProof(index);
@@ -27,7 +27,7 @@ public class SharedMerkleTree extends MerkleTree {
     }
 
     @Override
-    public boolean validateProof(int index, List<String> proof) {
+    public boolean validateProof(int index, List<byte[]> proof) {
         lock.readLock().lock();
         try {
             return super.validateProof(index, proof);
@@ -36,7 +36,7 @@ public class SharedMerkleTree extends MerkleTree {
         }
     }
 
-    public void updateTx(int index, String value) {
+    public void updateTx(int index, byte[] value) {
         lock.writeLock().lock();
         try {
             super.updateTx(index, value);
@@ -45,7 +45,7 @@ public class SharedMerkleTree extends MerkleTree {
         }
     }
 
-    public void addTx(String value) {
+    public void addTx(byte[] value) {
         lock.writeLock().lock();
         try {
             super.addTx(value);

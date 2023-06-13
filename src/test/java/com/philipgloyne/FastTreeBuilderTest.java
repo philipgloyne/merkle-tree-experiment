@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FastTreeBuilderTest {
@@ -14,10 +13,10 @@ class FastTreeBuilderTest {
     void testMultiThreadedTreeBuilder() {
 
         String aLongRandomString = randomString(1200); // 4 bytes/character (UTF-8) * 300 bytes (eth tx)
-        List<String> transactions = IntStream
+        List<byte[]> transactions = IntStream
                 .rangeClosed(1, 10000)
                 .boxed()
-                .map(v -> v + aLongRandomString)
+                .map(v -> (v + aLongRandomString).getBytes())
                 .toList();
 
         long t0 = System.currentTimeMillis();

@@ -1,5 +1,7 @@
 package com.philipgloyne;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -19,37 +21,37 @@ public class FastTreeBuilder implements TreeBuilder {
     private static final int POOL_SIZE = Runtime.getRuntime().availableProcessors();
 
     @Override
-    public List<String> build(List<String> txs) {
-        if (txs.size() == 0) return List.of("");
+    public List<byte[]> build(List<byte[]> txs) {
+        if (txs.size() == 0) return List.of("".getBytes());
         if (txs.size() == 1) return List.of(hashFn.hash(txs.get(0)));
 
-        List<String> levels = new ArrayList<>(txs);
-        List<String> currentLvl = txs;
+        List<byte[]> levels = new ArrayList<>(txs);
+        List<byte[]> currentLvl = txs;
         ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE);
 
         while (currentLvl.size() > 1) {
-            List<String> nextLvl = new ArrayList<>();
-            List<Future<String>> futures = new ArrayList<>();
+            List<byte[]> nextLvl = new ArrayList<>();
+            List<Future<byte[]>> futures = new ArrayList<>();
 
             for (int i = 0; i < currentLvl.size(); i += 2) {
                 final int finalI = i;
 
-                List<String> finalCurrentLvl = currentLvl;
-                Callable<String> task = () -> {
-                    String hash1 = hashFn.hash(finalCurrentLvl.get(finalI));
-                    String hash2 = (finalI + 1 < finalCurrentLvl.size())
+                List<byte[]> finalCurrentLvl = currentLvl;
+                Callable<byte[]> task = () -> {
+                    byte[] hash1 = hashFn.hash(finalCurrentLvl.get(finalI));
+                    byte[] hash2 = (finalI + 1 < finalCurrentLvl.size())
                             ? hashFn.hash(finalCurrentLvl.get(finalI + 1))
-                            : "";
-                    return hashFn.hash(hash1 + hash2);
+                            : "".getBytes();
+                    return hashFn.hash(ArrayUtils.addAll(hash1, hash2));
                 };
 
-                Future<String> future = executorService.submit(task);
+                Future<byte[]> future = executorService.submit(task);
                 futures.add(future);
             }
 
-            for (Future<String> future : futures) {
+            for (Future<byte[]> future : futures) {
                 try {
-                    String parentHash = future.get();
+                    byte[] parentHash = future.get();
                     nextLvl.add(parentHash);
                     levels.add(parentHash);
                 } catch (InterruptedException | ExecutionException e) {

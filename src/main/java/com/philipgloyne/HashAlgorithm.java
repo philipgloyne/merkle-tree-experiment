@@ -2,5 +2,5 @@ package com.philipgloyne;
 
 public interface HashAlgorithm {
 
-    String hash(String input);
+    byte[] hash(byte[] input);
 }

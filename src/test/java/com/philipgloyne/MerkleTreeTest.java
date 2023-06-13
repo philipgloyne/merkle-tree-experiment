@@ -157,6 +157,8 @@ class MerkleTreeTest {
         idTree.addTx("E");
 
         assertEquals("ABCDE", idTree.getRoot());
+        assertEquals(List.of("ABCD"), idTree.createProof(4));
+        assertTrue(idTree.validateProof(4, List.of("ABCD")));
     }
 
     private class IdentityHash implements HashAlgorithm {

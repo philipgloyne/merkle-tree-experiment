@@ -1,10 +1,8 @@
-# merkle-tree
+# Merkle Tree Experiment
 
-[Assignment spec](consensys_spec_java.pdf)  
+Implementation of a Merkle-Tree in Java.
 
-Implementation of a Merkle-Tree in Java for Consensys. 
-
-#### Supported feature set
+#### Supported features
 
 - Create a Merkle tree with a list of transactions
 - Return the Merkle root

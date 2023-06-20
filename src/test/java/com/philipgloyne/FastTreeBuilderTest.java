@@ -12,7 +12,7 @@ class FastTreeBuilderTest {
     @Test
     void testMultiThreadedTreeBuilder() {
 
-        String aLongRandomString = randomString(1200); // 4 bytes/character (UTF-8) * 300 bytes (eth tx)
+        String aLongRandomString = randomString(1200); // 4 bytes/char (Big O UTF-8) * 300 chars
         List<byte[]> transactions = IntStream
                 .rangeClosed(1, 10000)
                 .boxed()
@@ -28,7 +28,7 @@ class FastTreeBuilderTest {
         System.out.println("basic tree: " + basicBuildTime + "ms");
 
         long t2 = System.currentTimeMillis();
-        FastTreeBuilder fastTreeBuilder = new FastTreeBuilder(new SHA256D()); // 8 threads
+        FastTreeBuilder fastTreeBuilder = new FastTreeBuilder(new SHA256D());
         fastTreeBuilder.build(transactions);
         long t3 = System.currentTimeMillis();
         long fastBuildTime = t3 - t2;

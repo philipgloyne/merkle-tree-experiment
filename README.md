@@ -1,6 +1,6 @@
 # Merkle Tree Experiment
 
-Implementation of a Merkle-Tree in Java.
+A read optimised implementation of a Merkle-Tree in Java
 
 #### Supported features
 
@@ -10,6 +10,7 @@ Implementation of a Merkle-Tree in Java.
 - Validate a given Merkle proof
 - Update a single transaction in a tree 
 - Add a transaction to a tree
+- FastTreeBuilder makes use of a thread pool while building the tree
 
 #### Design notes
 

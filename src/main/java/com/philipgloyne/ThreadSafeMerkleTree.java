@@ -8,11 +8,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Allows a MerkleTree to be shared between threads, writes/mutations will block reads & writes to
  * keep consistency.
  */
-public class SharedMerkleTree extends MerkleTree {
+public class ThreadSafeMerkleTree extends MerkleTree {
 
     private final ReadWriteLock lock;
 
-    public SharedMerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<byte[]> txs) {
+    public ThreadSafeMerkleTree(TreeBuilder builder, HashAlgorithm hashFn, List<byte[]> txs) {
         super(builder, hashFn, txs);
         this.lock = new ReentrantReadWriteLock();
     }

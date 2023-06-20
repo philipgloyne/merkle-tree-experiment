@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * Tree builder that allows for concurrent hashing of parent nodes. It will complete a tree level before
+ * Tree builder that allows for concurrent hashing of nodes within a level. It will complete a tree level before
  * progressing to the next.
  */
 public class FastTreeBuilder implements TreeBuilder {
